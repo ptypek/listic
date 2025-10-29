@@ -24,3 +24,8 @@ export const AiGeneratedItemSchema = z.object({
 export const AiServiceResponseSchema = z.object({
     items: z.array(AiGeneratedItemSchema),
 });
+
+export const GetListsQueryDto = z.object({
+  sort: z.enum(["created_at", "name", "updated_at"]).optional().default("created_at"),
+  order: z.enum(["asc", "desc"]).optional().default("desc"),
+});

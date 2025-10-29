@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React from "react";
 import { Trash2 } from "lucide-react";
 import type { RecipeInputViewModel } from "@/types";
 import { Button } from "@/components/ui/button";

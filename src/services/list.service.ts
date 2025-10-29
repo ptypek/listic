@@ -1,5 +1,6 @@
-import { supabaseClient, type SupabaseClient } from "../db/supabase.client";
-import { AiServiceResponseSchema, type CreateListPayload } from "../lib/validators/list.validator";
+import { z } from "zod";
+import { type SupabaseClient } from "../db/supabase.client";
+import { AiServiceResponseSchema, type CreateListPayload, GetListsQueryDto } from "../lib/validators/list.validator";
 import type { GenerateListFromRecipesCommand, ShoppingListWithItemsDto } from "../types";
 
 const aiCategoryToDbCategory: { [key: string]: string } = {
@@ -14,10 +15,10 @@ const aiCategoryToDbCategory: { [key: string]: string } = {
 };
 
 class ListService {
-  async createList(payload: CreateListPayload, userId: string) {
+  async createList(supabase: SupabaseClient, payload: CreateListPayload, userId: string) {
     const { name } = payload;
 
-    const { data, error } = await supabaseClient
+    const { data, error } = await supabase
       .from("shopping_lists")
       .insert([{ name, user_id: userId }])
       .select()
@@ -29,6 +30,18 @@ class ListService {
     }
 
     return data;
+  }
+
+  async getLists(supabase: SupabaseClient, userId: string, query: z.infer<typeof GetListsQueryDto>) {
+    const { sort, order } = query;
+
+    const { data, error } = await supabase
+      .from("shopping_lists")
+      .select("*")
+      .eq("user_id", userId)
+      .order(sort, { ascending: order === "asc" });
+
+    return { data, error };
   }
 
   async generateListFromRecipes(cmd: GenerateListFromRecipesCommand, userId: string, supabase: SupabaseClient): Promise<ShoppingListWithItemsDto | null> {

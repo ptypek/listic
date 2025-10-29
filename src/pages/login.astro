@@ -1,0 +1,10 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import { LoginForm } from '@/components/features/auth/LoginForm';
+---
+
+<Layout title="Logowanie">
+  <main class="flex items-center justify-center h-screen">
+    <LoginForm client:load />
+  </main>
+</Layout>
