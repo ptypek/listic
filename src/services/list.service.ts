@@ -44,6 +44,25 @@ class ListService {
     return { data, error };
   }
 
+  async getListById(supabase: SupabaseClient, listId: string, userId: string): Promise<ShoppingListWithItemsDto | null> {
+    const { data, error } = await supabase
+      .from("shopping_lists")
+      .select(`
+        *,
+        items:list_items(*)
+      `)
+      .eq("id", listId)
+      .eq("user_id", userId)
+      .single();
+
+    if (error && error.code !== "PGRST116") {
+      console.error("Error fetching list from Supabase:", error);
+      throw new Error("Failed to fetch list from the database.");
+    }
+
+    return data;
+  }
+
   async generateListFromRecipes(cmd: GenerateListFromRecipesCommand, userId: string, supabase: SupabaseClient): Promise<ShoppingListWithItemsDto | null> {
     // 1. Construct prompt for AI (as implemented before)
     const { recipes, list_name } = cmd;

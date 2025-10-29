@@ -29,3 +29,7 @@ export const GetListsQueryDto = z.object({
   sort: z.enum(["created_at", "name", "updated_at"]).optional().default("created_at"),
   order: z.enum(["asc", "desc"]).optional().default("desc"),
 });
+
+export const getListValidator = z.object({
+  listId: z.string().uuid(),
+});
