@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { type SupabaseClient } from "../db/supabase.client";
 import { AiServiceResponseSchema, type CreateListPayload, GetListsQueryDto } from "../lib/validators/list.validator";
-import type { GenerateListFromRecipesCommand, ShoppingListWithItemsDto } from "../types";
+import type { GenerateListFromRecipesCommand, ShoppingListWithItemsDto, UpdateShoppingListCommand } from "../types";
 
 const aiCategoryToDbCategory: { [key: string]: string } = {
     "Dairy & Eggs": "nabiał",  
@@ -61,6 +61,26 @@ class ListService {
     }
 
     return data;
+  }
+
+  async updateList(supabase: SupabaseClient, listId: string, data: UpdateShoppingListCommand, userId: string) {
+    const { data: updatedList, error } = await supabase
+      .from('shopping_lists')
+      .update(data)
+      .eq('id', listId)
+      .eq('user_id', userId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error updating list in Supabase:', error);
+      // Don't throw for PGRST116 (Not Found), as we handle it as a null return
+      if (error.code !== 'PGRST116') {
+        throw new Error("Failed to update list in the database.");
+      }
+    }
+
+    return updatedList;
   }
 
   async generateListFromRecipes(cmd: GenerateListFromRecipesCommand, userId: string, supabase: SupabaseClient): Promise<ShoppingListWithItemsDto | null> {
@@ -140,6 +160,37 @@ class ListService {
     } catch (error) {
         console.error("Database transaction failed during list generation:", error);
         throw new Error("Failed to save the generated list to the database.");
+    }
+  }
+
+  async deleteList(supabase: SupabaseClient, listId: string, userId: string): Promise<void> {
+    // First, verify the list exists and belongs to the user.
+    const { data, error: fetchError } = await supabase
+      .from('shopping_lists')
+      .select('id')
+      .eq('id', listId)
+      .eq('user_id', userId)
+      .single();
+
+    if (fetchError && fetchError.code !== 'PGRST116') {
+      console.error('Error fetching list for deletion:', fetchError);
+      throw new Error('A database error occurred while trying to verify the list.');
+    }
+
+    // If data is null, it means no record was found (or fetchError.code was 'PGRST116')
+    if (!data) {
+      throw new Error('Not Found');
+    }
+
+    // If verification is successful, proceed with deletion.
+    const { error: deleteError } = await supabase
+      .from('shopping_lists')
+      .delete()
+      .eq('id', listId);
+
+    if (deleteError) {
+      console.error('Error deleting list from Supabase:', deleteError);
+      throw new Error('Failed to delete the list from the database.');
     }
   }
 }

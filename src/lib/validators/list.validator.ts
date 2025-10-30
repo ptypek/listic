@@ -33,3 +33,7 @@ export const GetListsQueryDto = z.object({
 export const getListValidator = z.object({
   listId: z.string().uuid(),
 });
+
+export const UpdateListValidator = z.object({
+  name: z.string().min(1, { message: "Nazwa listy nie może być pusta." }),
+});
