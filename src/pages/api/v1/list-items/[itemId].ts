@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { z } from "zod";
-import { updateListItemSchema } from "../../../../lib/validators/list.validator";
+import { updateListItemSchema, uuidValidator } from "../../../../lib/validators/list.validator";
 import { listService } from "../../../../services/list.service";
 
 export const PATCH: APIRoute = async ({ params, request, locals }) => {
@@ -47,13 +47,12 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
         { status: 400 }
       );
     }
-    // @ts-ignore
+
     if (error.name === "NotFoundError") {
-      // @ts-ignore
       return new Response(JSON.stringify({ message: error.message }), {
         status: 404,
       });
-    }
+    } 
 
     console.error("Error updating list item:", error);
     return new Response(
@@ -73,8 +72,7 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
   }
 
   // 2. Path Parameter Validation
-  const itemIdSchema = z.string().uuid({ message: "Invalid Item ID" });
-  const result = itemIdSchema.safeParse(params.itemId);
+  const result = uuidValidator.safeParse(params.itemId);
 
   if (!result.success) {
     return new Response(
@@ -86,10 +84,8 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
     );
   }
 
-  const { itemId } = params;
-
   try {
-    await listService.deleteListItem(locals.supabase, result.data, user.id);
+    await listService.deleteListItem(locals.supabase, result.data.uuId, user.id);
     return new Response(null, { status: 204 });
   } catch (error) {
     // @ts-ignore

@@ -30,6 +30,10 @@ export const GetListsQueryDto = z.object({
   order: z.enum(["asc", "desc"]).optional().default("desc"),
 });
 
+export const uuidValidator = z.object({
+  uuId: z.string().uuid(),
+});
+
 export const idListValidator = z.object({
   listId: z.string().uuid(),
 });

@@ -1,16 +1,25 @@
 import { defineMiddleware } from 'astro:middleware';
 import { createSupabaseServerInstance } from '@/db/supabase.client';
 
-// Routes that do not require authentication
-const publicApiRoutes = ['/api/v1/auth/login', '/api/v1/auth/register'];
+const protectedApiRoutes = [
+  '/api/v1/lists',
+  '/api/v1/list-items',
+  '/api/v1/products/search',
+  '/api/v1/ai-feedback',
+  '/api/v1/categories',
+];
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const supabase = createSupabaseServerInstance({ cookies: context.cookies, request: context.request });
 
-  const { data: { session } } = await supabase.auth.getSession();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (session && user) {
+  if (session && user && user.aud === 'authenticated') {
     context.locals.session = session;
     context.locals.user = user;
   } else {
@@ -21,14 +30,13 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   const pathname = context.url.pathname;
 
-  // Protect all API routes under /api/v1/ unless they are public
-  if (pathname.startsWith('/api/v1/') && !publicApiRoutes.some(route => pathname.startsWith(route))) {
-    if (!context.locals.session) {
-      return new Response(JSON.stringify({ error: 'User is not authenticated.' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
+  const isProtectedRoute = protectedApiRoutes.some((route) => pathname.startsWith(route));
+
+  if (isProtectedRoute && !context.locals.user) {
+    return new Response(JSON.stringify({ error: 'User is not authenticated.' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   return next();

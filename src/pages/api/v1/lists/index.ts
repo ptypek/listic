@@ -6,21 +6,10 @@ import { listService } from "../../../../services/list.service";
 export const prerender = false;
 
 export const GET: APIRoute = async ({ locals, url }) => {
-  const session = locals.session;
+  const user = locals.user;
 
-  if (!session || !session.user) {
-    return new Response(
-      JSON.stringify({
-        error: "Unauthorized",
-        message: "Użytkownik nie jest uwierzytelniony.",
-      }),
-      {
-        status: 401,
-        headers: {
-          "Content-Type": "application/json",
-        },
-      },
-    );
+  if (!user) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
   }
 
   try {
@@ -44,7 +33,7 @@ export const GET: APIRoute = async ({ locals, url }) => {
 
     const { data: lists, error } = await listService.getLists(
       locals.supabase,
-      session.user.id,
+      user.id,
       validation.data,
     );
 
@@ -88,21 +77,10 @@ export const GET: APIRoute = async ({ locals, url }) => {
 };
 
 export const POST: APIRoute = async ({ request, locals }) => {
-  const session = locals.session;
+  const user = locals.user;
 
-  if (!session || !session.user) {
-    return new Response(
-      JSON.stringify({
-        error: "Unauthorized",
-        message: "Użytkownik nie jest uwierzytelniony.",
-      }),
-      {
-        status: 401,
-        headers: {
-          "Content-Type": "application/json",
-        },
-      },
-    );
+  if (!user) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
   }
 
   try {
@@ -127,7 +105,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const newList = await listService.createList(
       locals.supabase,
       validation.data,
-      session.user.id,
+      user.id,
     );
 
     return new Response(JSON.stringify(newList), {

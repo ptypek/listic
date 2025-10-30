@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { idListValidator, UpdateListValidator } from "../../../../lib/validators/list.validator";
+import { uuidValidator, UpdateListValidator } from "../../../../lib/validators/list.validator";
 import { listService } from "../../../../services/list.service";
 
 export const prerender = false;
@@ -12,7 +12,7 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
 
   const { listId } = params;
 
-  const listIdValidation = idListValidator.safeParse({ listId });
+  const listIdValidation = uuidValidator.safeParse({ uuId: listId });
 
   if (!listIdValidation.success) {
     return new Response(JSON.stringify({ error: "Invalid list ID format" }), {
@@ -23,7 +23,7 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
   try {
     await listService.deleteList(
       supabase,
-      listIdValidation.data.listId,
+      listIdValidation.data.uuId,
       session.user.id
     );
 
@@ -45,7 +45,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
 
   const { listId } = params;
 
-  const validationResult = idListValidator.safeParse({ listId });
+  const validationResult = uuidValidator.safeParse({ uuId: listId });
 
   if (!validationResult.success) {
     return new Response(JSON.stringify(validationResult.error.flatten()), {
@@ -56,7 +56,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
   try {
     const list = await listService.getListById(
       supabase,
-      validationResult.data.listId,
+      validationResult.data.uuId,
       session.user.id
     );
 
@@ -78,7 +78,7 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
   }
 
   const { listId } = params;
-  const listIdValidation = idListValidator.safeParse({ listId });
+  const listIdValidation = uuidValidator.safeParse({ uuId: listId });
 
   if (!listIdValidation.success) {
     return new Response(JSON.stringify(listIdValidation.error.flatten()), {
@@ -104,7 +104,7 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
   try {
     const updatedList = await listService.updateList(
       supabase,
-      listIdValidation.data.listId,
+      listIdValidation.data.uuId,
       bodyValidation.data,
       session.user.id
     );
