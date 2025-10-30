@@ -30,10 +30,25 @@ export const GetListsQueryDto = z.object({
   order: z.enum(["asc", "desc"]).optional().default("desc"),
 });
 
-export const getListValidator = z.object({
+export const idListValidator = z.object({
   listId: z.string().uuid(),
 });
 
 export const UpdateListValidator = z.object({
   name: z.string().min(1, { message: "Nazwa listy nie może być pusta." }),
+});
+
+export const addListItemSchema = z.object({
+  list_id: z.string().uuid(),
+  category_id: z.number(),
+  name: z.string().min(1, { message: "Nazwa produktu nie może być pusta." }),
+  quantity: z.number().optional().default(1),
+  unit: z.string().optional().default("szt"),
+});
+
+export const updateListItemSchema = z.object({
+  name: z.string().min(1).optional(),
+  quantity: z.number().positive().optional(),
+  unit: z.string().min(1).optional(),
+  is_checked: z.boolean().optional(),
 });

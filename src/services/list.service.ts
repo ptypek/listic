@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { type SupabaseClient } from "../db/supabase.client";
-import { AiServiceResponseSchema, type CreateListPayload, GetListsQueryDto } from "../lib/validators/list.validator";
-import type { GenerateListFromRecipesCommand, ShoppingListWithItemsDto, UpdateShoppingListCommand } from "../types";
+import { AiServiceResponseSchema, type CreateListPayload, GetListsQueryDto, type addListItemSchema } from "../lib/validators/list.validator";
+import type { AddListItemCommand, GenerateListFromRecipesCommand, ListItemDto, ShoppingListWithItemsDto, UpdateListItemCommand, UpdateShoppingListCommand } from "../types";
 
 const aiCategoryToDbCategory: { [key: string]: string } = {
     "Dairy & Eggs": "nabiał",  
@@ -13,6 +13,13 @@ const aiCategoryToDbCategory: { [key: string]: string } = {
     "Spices & Herbs": "przyprawy",
     "Other": "inne",
 };
+
+class NotFoundError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "NotFoundError";
+  }
+}
 
 class ListService {
   async createList(supabase: SupabaseClient, payload: CreateListPayload, userId: string) {
@@ -179,7 +186,7 @@ class ListService {
 
     // If data is null, it means no record was found (or fetchError.code was 'PGRST116')
     if (!data) {
-      throw new Error('Not Found');
+      throw new NotFoundError('List not found');
     }
 
     // If verification is successful, proceed with deletion.
@@ -191,6 +198,110 @@ class ListService {
     if (deleteError) {
       console.error('Error deleting list from Supabase:', deleteError);
       throw new Error('Failed to delete the list from the database.');
+    }
+  }
+
+  async addListItem(supabase: SupabaseClient, command: AddListItemCommand, userId: string): Promise<ListItemDto> {
+    const { list_id, category_id, name, quantity, unit } = command;
+
+    // 1. Verify category exists
+    const { data: category, error: categoryError } = await supabase
+      .from('categories')
+      .select('id')
+      .eq('id', category_id)
+      .single();
+
+    if (categoryError || !category) {
+      throw new NotFoundError('Category not found');
+    }
+
+    // 2. Verify list exists and belongs to the user
+    const { data: list, error: listError } = await supabase
+      .from('shopping_lists')
+      .select('id')
+      .eq('id', list_id)
+      .eq('user_id', userId)
+      .single();
+
+    if (listError || !list) {
+      throw new NotFoundError('Shopping list not found');
+    }
+
+    // 3. Insert the new item
+    const { data: newItem, error: insertError } = await supabase
+      .from('list_items')
+      .insert({
+        list_id,
+        category_id,
+        name,
+        quantity,
+        unit,
+        source: 'manual',
+      })
+      .select()
+      .single();
+
+    if (insertError) {
+      console.error('Error inserting list item:', insertError);
+      throw new Error('Failed to add item to the list.');
+    }
+
+    return newItem;
+  }
+
+  async updateListItem(supabase: SupabaseClient, itemId: string, data: UpdateListItemCommand, userId: string): Promise<ListItemDto> {
+    // RLS ensures the user can only update items on their own lists.
+    // The `userId` parameter is implicitly used by RLS policy via `auth.uid()`.
+    const { data: updatedItem, error } = await supabase
+      .from('list_items')
+      .update(data)
+      .eq('id', itemId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error updating list item:', error);
+      // PGRST116: No rows found. This means either the item doesn't exist
+      // or the user does not have permission (due to RLS).
+      if (error.code === 'PGRST116') {
+        throw new NotFoundError('List item not found');
+      }
+      throw new Error('Failed to update list item.');
+    }
+
+    return updatedItem;
+  }
+
+  async deleteListItem(supabase: SupabaseClient, itemId: string, userId: string): Promise<void> {
+    // 1. Verify ownership before deleting
+    const { data: item, error: selectError } = await supabase
+      .from("list_items")
+      .select(`
+        id,
+        shopping_lists ( user_id )
+      `)
+      .eq("id", itemId)
+      .single();
+
+    if (selectError && selectError.code !== 'PGRST116') {
+      console.error("Error verifying item ownership:", selectError);
+      throw new Error("A database error occurred while verifying the item.");
+    }
+
+    // @ts-ignore
+    if (!item || item.shopping_lists.user_id !== userId) {
+      throw new NotFoundError("List item not found or access denied");
+    }
+
+    // 2. Delete the item
+    const { error: deleteError } = await supabase
+      .from("list_items")
+      .delete()
+      .eq("id", itemId);
+
+    if (deleteError) {
+      console.error("Error deleting list item:", deleteError);
+      throw new Error("Failed to delete the list item.");
     }
   }
 }
