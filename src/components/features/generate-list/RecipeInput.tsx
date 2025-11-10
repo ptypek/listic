@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useId } from "react";
 import { Trash2 } from "lucide-react";
 import type { RecipeInputViewModel } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -12,13 +12,14 @@ interface RecipeInputProps {
 }
 
 export const RecipeInput = ({ recipe, onRecipeChange, onRemoveRecipe }: RecipeInputProps) => {
+  const id = useId();
   return (
     <div className="relative flex flex-col gap-2">
-      <Label htmlFor={recipe.id} className="sr-only">
+      <Label htmlFor={id} className="sr-only">
         Recipe
       </Label>
       <Textarea
-        id={recipe.id}
+        id={id}
         value={recipe.value}
         onChange={(e) => onRecipeChange(recipe.id, e.target.value)}
         placeholder="Wklej przepis lub listę składników..."

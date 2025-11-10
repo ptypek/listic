@@ -1,0 +1,10 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import LastListFeature from "@/components/features/last-list/LastListFeature.tsx";
+---
+
+<Layout title="Twoja ostatnia lista">
+  <main class="container mx-auto py-8">
+    <LastListFeature client:only="react" />
+  </main>
+</Layout>

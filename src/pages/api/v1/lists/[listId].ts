@@ -48,7 +48,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
   const validationResult = uuidValidator.safeParse({ uuId: listId });
 
   if (!validationResult.success) {
-    return new Response(JSON.stringify(validationResult.error.flatten()), {
+    return new Response(JSON.stringify({ error: validationResult.error.flatten() }), {
       status: 400,
     });
   }

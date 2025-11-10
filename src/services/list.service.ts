@@ -39,16 +39,43 @@ class ListService {
     return data;
   }
 
-  async getLists(supabase: SupabaseClient, userId: string, query: z.infer<typeof GetListsQueryDto>) {
+  async getLists(supabase: SupabaseClient, query: z.infer<typeof GetListsQueryDto>, userId?: string) {
     const { sort, order } = query;
 
-    const { data, error } = await supabase
+    let queryBuilder = supabase
       .from("shopping_lists")
       .select("*")
-      .eq("user_id", userId)
       .order(sort, { ascending: order === "asc" });
 
+    if (userId) {
+      queryBuilder = queryBuilder.eq("user_id", userId);
+    }
+
+    const { data, error } = await queryBuilder;
+
     return { data, error };
+  }
+
+  async getLastList(supabase: SupabaseClient, userId: string): Promise<ShoppingListWithItemsDto | null> {
+    const { data, error } = await supabase
+      .from("shopping_lists")
+      .select(
+        `
+        *,
+        items:list_items(*)
+      `,
+      )
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single();
+
+    if (error && error.code !== "PGRST116") {
+      console.error("Error fetching last list from Supabase:", error);
+      throw new Error("Failed to fetch last list from the database.");
+    }
+
+    return data;
   }
 
   async getListById(supabase: SupabaseClient, listId: string, userId: string): Promise<ShoppingListWithItemsDto | null> {
@@ -98,9 +125,19 @@ class ListService {
     // 2. Call AI Service (mocked)
     const mockApiResponse = {
         "items": [
-            { "name": "Chicken Breast", "quantity": 2, "unit": "pcs", "category": "Meat & Fish" },
+            { "name": "Milk", "quantity": 1, "unit": "l", "category": "Dairy & Eggs" },
+            { "name": "Eggs", "quantity": 12, "unit": "pcs", "category": "Dairy & Eggs" },
+            { "name": "Tomatoes", "quantity": 4, "unit": "pcs", "category": "Vegetables" },
+            { "name": "Onion", "quantity": 1, "unit": "pcs", "category": "Vegetables" },
             { "name": "Garlic", "quantity": 3, "unit": "cloves", "category": "Vegetables" },
+            { "name": "Chicken Breast", "quantity": 2, "unit": "pcs", "category": "Meat" },
             { "name": "Pasta", "quantity": 500, "unit": "g", "category": "Pantry Staples" },
+            { "name": "Olive Oil", "quantity": 1, "unit": "bottle", "category": "Pantry Staples" },
+            { "name": "Apples", "quantity": 5, "unit": "pcs", "category": "Fruits" },
+            { "name": "Salmon", "quantity": 1, "unit": "fillet", "category": "Fish" },
+            { "name": "Salt", "quantity": 1, "unit": "pinch", "category": "Spices & Herbs" },
+            { "name": "Pepper", "quantity": 1, "unit": "pinch", "category": "Spices & Herbs" },
+            { "name": "Chocolate", "quantity": 1, "unit": "bar", "category": "Other" },
         ]
     };
     const aiResponse = mockApiResponse;
@@ -167,6 +204,44 @@ class ListService {
     } catch (error) {
         console.error("Database transaction failed during list generation:", error);
         throw new Error("Failed to save the generated list to the database.");
+    }
+  }
+
+  async addMockData(supabase: SupabaseClient, userId: string): Promise<void> {
+    const lastList = await this.getLastList(supabase, userId);
+
+    if (!lastList) {
+      throw new NotFoundError("No list found for the user.");
+    }
+
+    const { data: categories, error: catError } = await supabase.from('categories').select('id, name');
+    if (catError) throw new Error("Could not fetch categories from the database.");
+
+    const mockData = [
+      { name: "Apples", quantity: 1, unit: "kg", category: "owoce" },
+      { name: "Oranges", quantity: 2, unit: "kg", category: "owoce" },
+      { name: "Bananas", quantity: 3, unit: "kg", category: "owoce" },
+    ];
+
+    const itemsToInsert = mockData.map(item => {
+      const category = categories.find(c => c.name === item.category);
+      if (!category) {
+        throw new Error(`Category '${item.category}' not found.`);
+      }
+      return {
+        list_id: lastList.id,
+        category_id: category.id,
+        name: item.name,
+        quantity: item.quantity,
+        unit: item.unit,
+        source: 'manual' as const,
+      };
+    });
+
+    const { error: itemsError } = await supabase.from('list_items').insert(itemsToInsert);
+    if (itemsError) {
+      console.error("Error inserting mock data:", itemsError);
+      throw new Error("Failed to insert mock data.");
     }
   }
 

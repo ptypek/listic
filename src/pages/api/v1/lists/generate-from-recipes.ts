@@ -1,12 +1,19 @@
 import type { APIRoute } from "astro";
 import { generateListFromRecipesSchema } from "../../../../lib/validators/list.validator";
 import { listService } from "../../../../services/list.service";
-import { DEFAULT_USER_ID, supabaseClient } from "../../../../db/supabase.client";
 
 export const prerender = false;
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, locals }) => {
   try {
+    const user = locals.user;
+    if (!user) {
+        return new Response(JSON.stringify({ error: 'User is not authenticated.' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
     const body = await request.json();
     const validation = generateListFromRecipesSchema.safeParse(body);
 
@@ -17,10 +24,7 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    // TODO: Replace DEFAULT_USER_ID with authenticated user from locals
-    const userId = DEFAULT_USER_ID;
-
-    const result = await listService.generateListFromRecipes(validation.data, userId, supabaseClient);
+    const result = await listService.generateListFromRecipes(validation.data, user.id, locals.supabase);
 
     return new Response(JSON.stringify(result), {
       status: 201, // 201 Created

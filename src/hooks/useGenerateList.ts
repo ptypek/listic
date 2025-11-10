@@ -45,7 +45,7 @@ export const useGenerateList = () => {
   const mutation = useMutation({
     mutationFn: generateListApiCall,
     onSuccess: (data) => {
-      navigate(`/list/${data.id}`);
+      navigate('/list');
     },
   });
 

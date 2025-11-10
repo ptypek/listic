@@ -125,3 +125,28 @@ export interface GenerateListViewModel {
   isLoading: boolean;
   error: string | null;
 }
+
+// --- Last List View Models ---
+
+// Model widoku dla elementu listy (bezpośrednie mapowanie z DTO)
+export type ListItemViewModel = ListItemDto;
+
+// Model widoku dla kategorii, zawierający przypisane do niej produkty
+export interface CategoryViewModel extends CategoryDto {
+  items: ListItemViewModel[];
+}
+
+// Główny model widoku dla całej listy, z produktami zgrupowanymi w kategorie
+export interface ListViewModel {
+  id: string;
+  name: string;
+  groupedItems: CategoryViewModel[];
+}
+
+// Typ dla danych z formularza dodawania produktu
+export interface AddProductFormData {
+  name: string;
+  quantity: number;
+  unit: string;
+  categoryId: number;
+}
