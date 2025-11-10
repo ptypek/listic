@@ -1,7 +1,7 @@
 import React from 'react';
 import type { CategoryViewModel } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-// import ProductListItem from './ProductListItem';
+import ProductListItem from './ProductListItem';
 
 interface CategoryCardProps {
   category: CategoryViewModel;

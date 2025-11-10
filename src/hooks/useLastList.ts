@@ -43,24 +43,35 @@ export const useLastList = () => {
     } 
   });
 
+  
   const listQueryKey = ['list', 'last', user?.id];
 
   const { data: listViewModel, isLoading: isLoadingList, error } = useQuery({
     queryKey: listQueryKey,
     queryFn: async () => {
       if (!user) return null;
-      return await listService.getLastList(supabaseClient, user.id);
+      // Zmieniono na getLists, aby pobierać wszystkie listy, ale na razie zostawiamy getLastList, aby nie psuć logiki
+      const data = await listService.getLastList(supabaseClient, user.id);
+      console.log('Raw data from getLastList:', JSON.stringify(data, null, 2));
+      return data;
     },
     enabled: !!user && !!categories,
     select: (data) => {
       if (!data || !categories) return null;
-      return transformToListViewModel(data, categories);
+      const transformedData = transformToListViewModel(data, categories);
+      console.log('Transformed listViewModel:', JSON.stringify(transformedData, null, 2));
+      return transformedData;
     },
   });
 
   const { mutate: updateListItem, isPending: isUpdatingItem } = useMutation({
-    mutationFn: ({ itemId, data }: { itemId: string; data: UpdateListItemCommand }) => 
-      listService.updateListItem(supabaseClient, itemId, data, user!.id),
+    mutationFn: ({ itemId, data }: { itemId:string; data:UpdateListItemCommand }) => {
+      if (!user) {
+        toast.error("Musisz być zalogowany, aby zaktualizować produkt.");
+        return Promise.reject(new Error("User not authenticated"));
+      }
+      return listService.updateListItem(supabaseClient, itemId, data, user.id);
+    },
     onMutate: async ({ itemId, data }) => {
       await queryClient.cancelQueries({ queryKey: listQueryKey });
       const previousList = queryClient.getQueryData<ShoppingListWithItemsDto>(listQueryKey);
@@ -70,15 +81,23 @@ export const useLastList = () => {
       return { previousList };
     },
     onSuccess: () => toast.success("Produkt zaktualizowany!"),
-    onError: (err, variables, context) => {
+    onError: (err: Error, variables, context) => {
       if (context?.previousList) queryClient.setQueryData(listQueryKey, context.previousList);
-      toast.error("Nie udało się zaktualizować produktu.");
+      if (err.message !== "User not authenticated") {
+        toast.error("Nie udało się zaktualizować produktu.");
+      }
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: listQueryKey }),
   });
 
   const { mutate: addListItem, isPending: isAddingItem } = useMutation({
-    mutationFn: (data: AddListItemCommand) => listService.addListItem(supabaseClient, data, user!.id),
+    mutationFn: (data: AddListItemCommand) => {
+      if (!user) {
+        toast.error("Musisz być zalogowany, aby dodać produkt.");
+        return Promise.reject(new Error("User not authenticated"));
+      }
+      return listService.addListItem(supabaseClient, data, user.id);
+    },
     onMutate: async (newItem) => {
       await queryClient.cancelQueries({ queryKey: listQueryKey });
       const previousList = queryClient.getQueryData<ShoppingListWithItemsDto>(listQueryKey);
@@ -98,15 +117,23 @@ export const useLastList = () => {
       return { previousList };
     },
     onSuccess: () => toast.success("Produkt dodany!"),
-    onError: (err, variables, context) => {
+    onError: (err: Error, variables, context) => {
       if (context?.previousList) queryClient.setQueryData(listQueryKey, context.previousList);
-      toast.error("Nie udało się dodać produktu.");
+      if (err.message !== "User not authenticated") {
+        toast.error("Nie udało się dodać produktu.");
+      }
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: listQueryKey }),
   });
 
   const { mutate: deleteListItem, isPending: isDeletingItem } = useMutation({
-    mutationFn: (itemId: string) => listService.deleteListItem(supabaseClient, itemId, user!.id),
+    mutationFn: (itemId: string) => {
+      if (!user) {
+        toast.error("Musisz być zalogowany, aby usunąć produkt.");
+        return Promise.reject(new Error("User not authenticated"));
+      }
+      return listService.deleteListItem(supabaseClient, itemId, user.id);
+    },
     onMutate: async (itemId) => {
       await queryClient.cancelQueries({ queryKey: listQueryKey });
       const previousList = queryClient.getQueryData<ShoppingListWithItemsDto>(listQueryKey);
@@ -116,17 +143,29 @@ export const useLastList = () => {
       return { previousList };
     },
     onSuccess: () => toast.success("Produkt usunięty!"),
-    onError: (err, variables, context) => {
+    onError: (err: Error, variables, context) => {
       if (context?.previousList) queryClient.setQueryData(listQueryKey, context.previousList);
-      toast.error("Nie udało się usunąć produktu.");
+      if (err.message !== "User not authenticated") {
+        toast.error("Nie udało się usunąć produktu.");
+      }
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: listQueryKey }),
   });
 
   const { mutate: reportAiFeedback, isPending: isReportingFeedback } = useMutation({
-    mutationFn: (data: CreateAiFeedbackCommand) => aiFeedbackService.logFeedback(data, user!.id),
+    mutationFn: (data: CreateAiFeedbackCommand) => {
+      if (!user) {
+        toast.error("Musisz być zalogowany, aby wysłać opinię.");
+        return Promise.reject(new Error("User not authenticated"));
+      }
+      return aiFeedbackService.logFeedback(data, user.id);
+    },
     onSuccess: () => toast.success("Dziękujemy za Twoją opinię!"),
-    onError: () => toast.error("Nie udało się wysłać opinii."),
+    onError: (err: Error) => {
+      if (err.message !== "User not authenticated") {
+        toast.error("Nie udało się wysłać opinii.");
+      }
+    },
   });
   
   const noListsFound = !isLoadingList && !listViewModel;

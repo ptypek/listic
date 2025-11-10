@@ -43,6 +43,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
     return new Response("Unauthorized", { status: 401 });
   }
 
+  console.log("Getting list for user:", session.user.id);
   const { listId } = params;
 
   const validationResult = uuidValidator.safeParse({ uuId: listId });

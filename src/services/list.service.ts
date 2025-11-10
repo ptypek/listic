@@ -39,12 +39,15 @@ class ListService {
     return data;
   }
 
-  async getLists(supabase: SupabaseClient, query: z.infer<typeof GetListsQueryDto>, userId?: string) {
+  async getLists(supabase: SupabaseClient, userId: string, query: z.infer<typeof GetListsQueryDto>) {
     const { sort, order } = query;
 
     let queryBuilder = supabase
       .from("shopping_lists")
-      .select("*")
+      .select(`
+        *,
+        items:list_items(*)
+      `)
       .order(sort, { ascending: order === "asc" });
 
     if (userId) {
@@ -52,6 +55,8 @@ class ListService {
     }
 
     const { data, error } = await queryBuilder;
+
+    console.log('Data from getLists in service:', JSON.stringify(data, null, 2));
 
     return { data, error };
   }

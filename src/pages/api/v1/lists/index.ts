@@ -53,6 +53,8 @@ export const GET: APIRoute = async ({ locals, url }) => {
       );
     }
 
+    console.log("Lists from service:", JSON.stringify(lists, null, 2));
+
     return new Response(JSON.stringify(lists), {
       status: 200,
       headers: {

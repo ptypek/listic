@@ -1,24 +1,24 @@
-import React from 'react';
-import { useLastList } from '@/hooks/useLastList';
-import { Button } from '@/components/ui/button';
+import React from "react";
+import { useLastList } from "@/hooks/useLastList";
+import { Button } from "@/components/ui/button";
 // Placeholder components - will be implemented later
 // import AddProductForm from './AddProductForm';
 // import CategoryList from './CategoryList';
 
-import AddProductForm from './AddProductForm';
-import CategoryList from './CategoryList';
+import AddProductForm from "./AddProductForm";
+import CategoryList from "./CategoryList";
 
 const LastListView = () => {
-  const { 
-    listViewModel, 
-    categories, 
-    isLoading, 
-    error, 
-    noListsFound, 
-    updateListItem, 
-    addListItem, 
+  const {
+    listViewModel,
+    categories,
+    isLoading,
+    error,
+    noListsFound,
+    updateListItem,
+    addListItem,
     isAddingItem,
-    deleteListItem 
+    deleteListItem,
   } = useLastList();
 
   if (isLoading) {
@@ -64,19 +64,15 @@ const LastListView = () => {
 
   const handleDeleteItem = (itemId: string) => {
     deleteListItem(itemId);
-  }
+  };
 
   return (
     <div>
       <h1 className="text-3xl font-bold mb-6">{listViewModel.name}</h1>
-      <AddProductForm 
-        categories={categories} 
-        onSubmit={handleAddItem} 
-        disabled={isAddingItem}
-      />
-      <CategoryList 
-        groupedItems={listViewModel.groupedItems} 
-        onUpdateItem={handleUpdateItem} 
+      <AddProductForm categories={categories} onSubmit={handleAddItem} disabled={isAddingItem} />
+      <CategoryList
+        groupedItems={listViewModel.groupedItems}
+        onUpdateItem={handleUpdateItem}
         onDeleteItem={handleDeleteItem}
       />
     </div>

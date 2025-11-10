@@ -1,13 +1,12 @@
-import { createClient } from '@supabase/supabase-js';
 import type { AstroCookies } from 'astro';
-import { createServerClient, type CookieOptionsWithName } from '@supabase/ssr';
+import { createBrowserClient, createServerClient, type CookieOptionsWithName } from '@supabase/ssr';
 
 import type { Database } from '../db/database.types.ts';
 
 const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_KEY;
 
-export const supabaseClient = createClient<Database>(supabaseUrl, supabaseAnonKey);
+export const supabaseClient = createBrowserClient<Database>(supabaseUrl, supabaseAnonKey);
 export type SupabaseClient = typeof supabaseClient;
 
 export const createSupabaseServerInstance = (context: {
