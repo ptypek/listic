@@ -11,7 +11,7 @@ const addProductSchema = z.object({
   name: z.string().trim().min(1, "Nazwa jest wymagana"),
   quantity: z.coerce.number().positive("Ilość musi być większa od 0"),
   unit: z.string().trim().min(1, "Jednostka jest wymagana"),
-  categoryId: z.coerce.number(),
+  category_id: z.coerce.number(),
 });
 
 interface AddProductFormProps {
@@ -31,7 +31,7 @@ const AddProductForm: React.FC<AddProductFormProps> = ({ categories, onSubmit, d
   };
 
   const handleCategoryChange = (value: string) => {
-    handleChange('categoryId', parseInt(value, 10));
+    handleChange('category_id', parseInt(value, 10));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -76,7 +76,7 @@ const AddProductForm: React.FC<AddProductFormProps> = ({ categories, onSubmit, d
         </div>
         <div>
           <Label htmlFor="category">Kategoria</Label>
-          <Select onValueChange={handleCategoryChange} value={formData.categoryId?.toString()}>
+          <Select onValueChange={handleCategoryChange} value={formData.category_id?.toString()}>
             <SelectTrigger>
               <SelectValue placeholder="Wybierz..." />
             </SelectTrigger>

@@ -182,6 +182,17 @@ All endpoints are prefixed with `/api/v1`. All endpoints require authentication 
 
 ---
 
+### Resource: User (`/user`)
+
+#### DELETE /user
+- **Description**: Permanently delete the authenticated user's account and all associated data. This action is irreversible.
+- **Success Response (204 No Content)**
+- **Error Responses**:
+    - `401 Unauthorized`: User is not authenticated.
+    - `500 Internal Server Error`: Failed to delete user account.
+
+---
+
 ### RPC Endpoint: AI List Generation
 
 #### POST /lists/generate-from-recipes

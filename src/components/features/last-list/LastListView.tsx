@@ -1,12 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { useLastList } from "@/hooks/useLastList";
 import { Button } from "@/components/ui/button";
-// Placeholder components - will be implemented later
-// import AddProductForm from './AddProductForm';
-// import CategoryList from './CategoryList';
-
 import AddProductForm from "./AddProductForm";
 import CategoryList from "./CategoryList";
+import EditProductDialog from "./EditProductDialog";
+import type { ListItemViewModel, UpdateListItemCommand } from "@/types";
 
 const LastListView = () => {
   const {
@@ -19,7 +17,11 @@ const LastListView = () => {
     addListItem,
     isAddingItem,
     deleteListItem,
+    isUpdatingItem,
   } = useLastList();
+
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<ListItemViewModel | null>(null);
 
   if (isLoading) {
     return (
@@ -54,7 +56,7 @@ const LastListView = () => {
     return null; // Safeguard
   }
 
-  const handleUpdateItem = (itemId: string, data: any) => {
+  const handleUpdateItem = (itemId: string, data: UpdateListItemCommand) => {
     updateListItem({ itemId, data });
   };
 
@@ -66,6 +68,21 @@ const LastListView = () => {
     deleteListItem(itemId);
   };
 
+  const handleEditItem = (item: ListItemViewModel) => {
+    setEditingItem(item);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleCloseEditDialog = () => {
+    setIsEditDialogOpen(false);
+    setEditingItem(null);
+  };
+
+  const handleSaveEditedItem = (itemId: string, data: UpdateListItemCommand) => {
+    updateListItem({ itemId, data });
+    handleCloseEditDialog();
+  };
+
   return (
     <div>
       <h1 className="text-3xl font-bold mb-6">{listViewModel.name}</h1>
@@ -74,6 +91,15 @@ const LastListView = () => {
         groupedItems={listViewModel.groupedItems}
         onUpdateItem={handleUpdateItem}
         onDeleteItem={handleDeleteItem}
+        onEditItem={handleEditItem}
+      />
+      <EditProductDialog
+        isOpen={isEditDialogOpen}
+        onClose={handleCloseEditDialog}
+        onSave={handleSaveEditedItem}
+        item={editingItem}
+        categories={categories}
+        isSaving={isUpdatingItem}
       />
     </div>
   );

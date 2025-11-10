@@ -6,9 +6,10 @@ interface CategoryListProps {
   groupedItems: CategoryViewModel[];
   onUpdateItem: (id: string, data: any) => void;
   onDeleteItem: (id: string) => void;
+  onEditItem: (item: ListItemViewModel) => void;
 }
 
-const CategoryList: React.FC<CategoryListProps> = ({ groupedItems, onUpdateItem, onDeleteItem }) => {
+const CategoryList: React.FC<CategoryListProps> = ({ groupedItems, onUpdateItem, onDeleteItem, onEditItem }) => {
   if (!groupedItems || groupedItems.length === 0) {
     return <p className="text-center text-gray-500">Ta lista jest pusta.</p>;
   }
@@ -21,6 +22,7 @@ const CategoryList: React.FC<CategoryListProps> = ({ groupedItems, onUpdateItem,
           category={category} 
           onUpdateItem={onUpdateItem} 
           onDeleteItem={onDeleteItem} 
+          onEditItem={onEditItem}
         />
       ))}
     </div>

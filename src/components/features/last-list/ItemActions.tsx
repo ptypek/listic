@@ -12,12 +12,12 @@ import type { ListItemViewModel } from '@/types';
 interface ItemActionsProps {
   item: ListItemViewModel;
   onDelete: (id: string) => void;
-  // onEdit and onReportError will be implemented later
+  onEdit: (item: ListItemViewModel) => void;
 }
 
-const ItemActions: React.FC<ItemActionsProps> = ({ item, onDelete }) => {
+const ItemActions: React.FC<ItemActionsProps> = ({ item, onDelete, onEdit }) => {
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="h-8 w-8 p-0">
           <span className="sr-only">Otwórz menu</span>
@@ -25,7 +25,7 @@ const ItemActions: React.FC<ItemActionsProps> = ({ item, onDelete }) => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => alert('Edit action not implemented yet')}>
+        <DropdownMenuItem onClick={() => onEdit(item)}>
           <Pencil className="mr-2 h-4 w-4" />
           <span>Edytuj</span>
         </DropdownMenuItem>

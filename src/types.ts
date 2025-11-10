@@ -148,5 +148,5 @@ export interface AddProductFormData {
   name: string;
   quantity: number;
   unit: string;
-  categoryId: number;
+  category_id: number;
 }

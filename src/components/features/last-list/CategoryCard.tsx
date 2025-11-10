@@ -7,9 +7,10 @@ interface CategoryCardProps {
   category: CategoryViewModel;
   onUpdateItem: (id: string, data: any) => void; 
   onDeleteItem: (id: string) => void;
+  onEditItem: (item: ListItemViewModel) => void;
 }
 
-const CategoryCard: React.FC<CategoryCardProps> = ({ category, onUpdateItem, onDeleteItem }) => {
+const CategoryCard: React.FC<CategoryCardProps> = ({ category, onUpdateItem, onDeleteItem, onEditItem }) => {
   return (
     <Card>
       <CardHeader>
@@ -18,7 +19,13 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, onUpdateItem, onD
       <CardContent>
         <div className="space-y-4">
           {category.items.map(item => (
-            <ProductListItem key={item.id} item={item} onUpdate={onUpdateItem} onDelete={onDeleteItem} />
+            <ProductListItem 
+              key={item.id} 
+              item={item} 
+              onUpdate={onUpdateItem} 
+              onDelete={onDeleteItem} 
+              onEdit={onEditItem} 
+            />
           ))}
         </div>
       </CardContent>

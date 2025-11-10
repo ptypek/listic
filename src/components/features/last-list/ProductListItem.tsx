@@ -8,9 +8,10 @@ interface ProductListItemProps {
   item: ListItemViewModel;
   onUpdate: (id: string, data: UpdateListItemCommand) => void;
   onDelete: (id: string) => void;
+  onEdit: (item: ListItemViewModel) => void;
 }
 
-const ProductListItem: React.FC<ProductListItemProps> = ({ item, onUpdate, onDelete }) => {
+const ProductListItem: React.FC<ProductListItemProps> = ({ item, onUpdate, onDelete, onEdit }) => {
   const handleCheckedChange = (isChecked: boolean) => {
     onUpdate(item.id, { is_checked: isChecked });
   };
@@ -32,7 +33,7 @@ const ProductListItem: React.FC<ProductListItemProps> = ({ item, onUpdate, onDel
       >
         {item.name} <span className="text-sm text-gray-400">({item.quantity} {item.unit})</span>
       </label>
-      <ItemActions item={item} onDelete={onDelete} />
+      <ItemActions item={item} onDelete={onDelete} onEdit={onEdit} />
     </div>
   );
 };
