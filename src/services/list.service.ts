@@ -1,4 +1,5 @@
 import { z } from "zod";
+import OpenAI from "openai";
 import { type SupabaseClient } from "../db/supabase.client";
 import { AiServiceResponseSchema, type CreateListPayload, GetListsQueryDto, type addListItemSchema } from "../lib/validators/list.validator";
 import type { AddListItemCommand, GenerateListFromRecipesCommand, ListItemDto, ShoppingListWithItemsDto, UpdateListItemCommand, UpdateShoppingListCommand } from "../types";
@@ -124,28 +125,69 @@ class ListService {
 
   async generateListFromRecipes(cmd: GenerateListFromRecipesCommand, userId: string, supabase: SupabaseClient): Promise<ShoppingListWithItemsDto | null> {
     // 1. Construct prompt for AI (as implemented before)
-    const { recipes, list_name } = cmd;
-    // ... (prompt construction logic is assumed to be here)
+    
+    const openai = new OpenAI({
+        baseURL: "https://openrouter.ai/api/v1",
+        apiKey: process.env.OPENROUTER_API_KEY || import.meta.env.OPENROUTER_API_KEY, 
+        defaultHeaders: {
+            "X-Title": "Listic App",
+        }
+    });
 
-    // 2. Call AI Service (mocked)
-    const mockApiResponse = {
-        "items": [
-            { "name": "Milk", "quantity": 1, "unit": "l", "category": "Dairy & Eggs" },
-            { "name": "Eggs", "quantity": 12, "unit": "pcs", "category": "Dairy & Eggs" },
-            { "name": "Tomatoes", "quantity": 4, "unit": "pcs", "category": "Vegetables" },
-            { "name": "Onion", "quantity": 1, "unit": "pcs", "category": "Vegetables" },
-            { "name": "Garlic", "quantity": 3, "unit": "cloves", "category": "Vegetables" },
-            { "name": "Chicken Breast", "quantity": 2, "unit": "pcs", "category": "Meat" },
-            { "name": "Pasta", "quantity": 500, "unit": "g", "category": "Pantry Staples" },
-            { "name": "Olive Oil", "quantity": 1, "unit": "bottle", "category": "Pantry Staples" },
-            { "name": "Apples", "quantity": 5, "unit": "pcs", "category": "Fruits" },
-            { "name": "Salmon", "quantity": 1, "unit": "fillet", "category": "Fish" },
-            { "name": "Salt", "quantity": 1, "unit": "pinch", "category": "Spices & Herbs" },
-            { "name": "Pepper", "quantity": 1, "unit": "pinch", "category": "Spices & Herbs" },
-            { "name": "Chocolate", "quantity": 1, "unit": "bar", "category": "Other" },
-        ]
-    };
-    const aiResponse = mockApiResponse;
+    const { recipes, list_name } = cmd;
+
+    const systemPrompt = `
+    You are an expert chef and nutritionist assistant.
+    Your goal is to create a consolidated shopping list from recipes, optimized for a Polish shopping environment.
+
+    STRICT RULES FOR OUTPUT:
+    1. **MERGE**: Combine ingredients (e.g. 2 onions + 1 onion = 3 onions).
+    2. **TRANSLATE**: Translate ingredient names to Polish (e.g., "All-purpose flour" -> "Mąka pszenna").
+    3. **CONVERT TO METRIC (CRITICAL)**:
+       - You MUST convert "cups", "oz", "lb", "tbsp" to metric units.
+       - **Liquids** (Wine, Oil, Broth, Milk): Convert to **ml**. (Assume 1 cup = 240ml).
+       - **Solids** (Flour, Rice, Sugar): Convert to **g**. (Estimate density, e.g., 1 cup flour ≈ 125g, 1 cup sugar ≈ 200g).
+       - **Produce**: Use "szt." (pieces) or "kg".
+       - NEVER leave "cup" or "tablespoon" in the output.
+    4. **CATEGORIZE SMARTLY**:
+       - Assign one of these EXACT categories keys: "Dairy & Eggs", "Vegetables", "Meat", "Pantry Staples", "Fruits", "Fish", "Spices & Herbs", "Beverages", "Other".
+       - **TRAP WARNING**: "Dry White Wine" is a LIQUID. Do NOT put it in "Pantry Staples" (Suche). Put alcohol/wine in "Beverages" or "Other".
+       - "Canned tomato sauce" goes to "Pantry Staples" or "Vegetables", convert 1.5 cup to ~360ml or 360g.
+    5. **FORMAT**: Output raw JSON only.
+
+    Expected JSON Structure:
+    {
+      "items": [
+        { "name": "Nazwa Produktu (PL)", "quantity": number, "unit": "g/ml/szt/opak", "category": "Category Name" }
+      ]
+    }
+    `;
+
+    const userPrompt = `
+    Recipes to process: 
+    ${JSON.stringify(recipes)}
+    `;
+
+    // 2. Call AI Service
+    console.log("Calling OpenRouter...");
+        const completion = await openai.chat.completions.create({
+            // "google/gemini-2.0-flash-001" jest teraz darmowy/bardzo tani i świetny w JSON
+            // Alternatywy: "openai/gpt-4o-mini", "meta-llama/llama-3.1-70b-instruct"
+            model: "openai/gpt-4o-mini", 
+            messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: userPrompt }
+            ],
+            response_format: { type: "json_object" }, // Wymuszenie JSON (działa na modelach wspierających)
+        });
+
+        const content = completion.choices[0].message.content;
+        if (!content) throw new Error("AI returned empty response");
+
+        // Czyścimy odpowiedź z ewentualnych znaczników markdown (np. ```json ... ```)
+        const cleanJson = content.replace(/```json\n?|```/g, "").trim();
+        
+        const aiResponse = JSON.parse(cleanJson);
 
     // 3. Parse and validate AI response
     const validation = AiServiceResponseSchema.safeParse(aiResponse);
