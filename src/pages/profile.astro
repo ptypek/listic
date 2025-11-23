@@ -1,0 +1,13 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import { UserProfileCard } from '@/components/features/profile/UserProfileCard';
+const { user } = Astro.locals;
+---
+
+<Layout title="Profile">
+  <main class="flex justify-center items-center min-h-screen bg-gray-100 dark:bg-gray-900 p-4">
+    <div class="w-full max-w-md">
+      <UserProfileCard client:load user={user} />
+    </div>
+  </main>
+</Layout>
