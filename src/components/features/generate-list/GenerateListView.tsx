@@ -41,7 +41,9 @@ export const GenerateListView = () => {
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Generuj listę
             </Button>
-            <p className="min-h-[24px] text-sm text-destructive">{error || " "}</p>
+            <p data-testid="error-message" className="min-h-[24px] text-sm text-destructive">
+              {error || " "}
+            </p>
           </footer>
         </form>
       </div>

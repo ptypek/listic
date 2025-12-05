@@ -24,6 +24,8 @@ The core problem this project aims to solve is the time-consuming and error-pron
 - **UI Components:** [shadcn/ui](https://ui.shadcn.com/) (via `class-variance-authority`, `clsx`, `tailwind-merge`)
 - **Backend (Planned):** [Supabase](https://supabase.com/)
 - **AI (Planned):** Recipe processing via an external API (e.g., OpenRouter)
+- **Unit Testing:** [Vitest](https://vitest.dev/), [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/)
+- **E2E Testing:** [Playwright](https://playwright.dev/)
 - **Linting & Formatting:** [ESLint](https://eslint.org/), [Prettier](https://prettier.io/)
 - **Package Manager:** [npm](https://www.npmjs.com/)
 
