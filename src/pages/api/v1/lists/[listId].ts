@@ -90,7 +90,7 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
   let body;
   try {
     body = await request.json();
-  } catch (error) {
+  } catch {
     return new Response(JSON.stringify({ message: "Invalid request body" }), { status: 400 });
   }
 

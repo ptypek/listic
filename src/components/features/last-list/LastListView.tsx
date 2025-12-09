@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import AddProductForm from "./AddProductForm";
 import CategoryList from "./CategoryList";
 import EditProductDialog from "./EditProductDialog";
-import type { ListItemViewModel, UpdateListItemCommand } from "@/types";
+import type { AddProductFormData, ListItemViewModel, UpdateListItemCommand } from "@/types";
 
 const LastListView = () => {
   const {
@@ -60,7 +60,7 @@ const LastListView = () => {
     updateListItem({ itemId, data });
   };
 
-  const handleAddItem = (formData: any) => {
+  const handleAddItem = (formData: AddProductFormData) => {
     addListItem({ ...formData, list_id: listViewModel.id });
   };
 
