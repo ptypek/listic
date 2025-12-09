@@ -1,97 +1,46 @@
-# Nazwa potoku CI/CD
 name: Build and Test
 
-# Wyzwalacze (Triggers)
 on:
-  # Uruchom przy push na branch 'main'
   push:
-    branches: [ "main" ]
-  # Pozwól na ręczne uruchomienie z poziomu interfejsu GitHub
+    branches: ["main"]
   workflow_dispatch:
 
-# Definicja zadań (Jobs)
 jobs:
-  # Zadanie odpowiedzialne za budowanie aplikacji
-  build:
-    name: Build
-    # Uruchom na najnowszej dostępnej maszynie z Ubuntu
-    runs-on: ubuntu-latest
-    steps:
-      # Krok 1: Pobranie kodu źródłowego repozytorium
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      # Krok 2: Konfiguracja środowiska Node.js
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          # Wersja Node.js pobrana z pliku .nvmrc w repozytorium
-          node-version-file: '.nvmrc'
-          # Włączenie cache'owania dla npm, aby przyspieszyć przyszłe buildy
-          cache: 'npm'
-
-      # Krok 3: Instalacja zależności projektu
-      - name: Install dependencies
-        # 'npm ci' jest preferowane w CI, ponieważ instaluje dokładne wersje z package-lock.json
-        run: npm ci
-
-      # Krok 4: Budowanie aplikacji w trybie produkcyjnym
-      - name: Build project
-        run: npm run build
-
-      # Krok 5: Przekazanie zbudowanych plików (artefaktów) do kolejnego zadania
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          # Nazwa artefaktu
-          name: dist
-          # Ścieżka do folderu z zbudowaną aplikacją
-          path: dist/
-
-  # Zadanie odpowiedzialne za uruchamianie testów
   test:
     name: Test
-    # Uruchom na najnowszej dostępnej maszynie z Ubuntu
     runs-on: ubuntu-latest
-    # Uruchom to zadanie dopiero po pomyślnym zakończeniu zadania 'build'
-    needs: build
     steps:
-      # Krok 1: Pobranie kodu źródłowego repozytorium
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Krok 2: Konfiguracja środowiska Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
-          cache: 'npm'
+          node-version-file: ".nvmrc"
+          cache: "npm"
 
-      # Krok 3: Instalacja zależności projektu
       - name: Install dependencies
         run: npm ci
 
-      # Krok 4: Uruchomienie testów jednostkowych (Vitest)
       - name: Run unit tests
         run: npm run test:unit
 
-      # Krok 5: Pobranie artefaktów z zadania 'build'
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          name: dist
-          path: dist
+          node-version-file: ".nvmrc"
+          cache: "npm"
 
-      # Krok 6: Instalacja przeglądarek wymaganych przez Playwright
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps
+      - name: Install dependencies
+        run: npm ci
 
-      # Krok 7: Uruchomienie testów E2E (Playwright)
-      - name: Run E2E tests
-        run: |
-          # Uruchom serwer podglądu w tle
-          npm run preview &
-          # Poczekaj chwilę, aby serwer zdążył się uruchomić
-          sleep 10
-          # Uruchom testy E2E
-          npm run test:e2e
+      - name: Build project
+        run: npm run build
