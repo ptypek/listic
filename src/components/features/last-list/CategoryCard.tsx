@@ -1,11 +1,11 @@
 import React from "react";
-import type { CategoryViewModel, ListItemViewModel } from "@/types";
+import type { CategoryViewModel, ListItemViewModel, UpdateListItemCommand } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ProductListItem from "./ProductListItem";
 
 interface CategoryCardProps {
   category: CategoryViewModel;
-  onUpdateItem: (id: string, data: any) => void;
+  onUpdateItem: (id: string, data: UpdateListItemCommand) => void;
   onDeleteItem: (id: string) => void;
   onEditItem: (item: ListItemViewModel) => void;
 }

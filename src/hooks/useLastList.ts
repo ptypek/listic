@@ -15,7 +15,7 @@ const transformToListViewModel = (list: ShoppingListWithItemsDto, categories: Ca
   for (const item of list.items) {
     const category = categoryMap.get(item.category_id);
     if (category) {
-      // @ts-ignore
+      // @ts-expect-error - items is added dynamically
       category.items.push(item);
     }
   }

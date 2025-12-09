@@ -39,7 +39,7 @@ export function LoginForm() {
         const data = await response.json();
         setError(data.error || 'Wystąpił błąd podczas logowania.');
       }
-    } catch (err) {
+    } catch {
       setError('Nie można połączyć się z serwerem.');
     } finally {
       setLoading(false);

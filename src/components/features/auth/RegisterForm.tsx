@@ -46,8 +46,8 @@ export function RegisterForm() {
         const data = await response.json();
         setError(data.error || "Wystąpił błąd podczas rejestracji.");
       }
-    } catch (err) {
-      setError("Nie można połączyć się z serwerem.");
+    } catch {
+      setError('Nie można połączyć się z serwerem.');
     } finally {
       setLoading(false);
     }
