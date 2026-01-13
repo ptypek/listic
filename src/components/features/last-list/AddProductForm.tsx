@@ -1,10 +1,10 @@
-import React, { useState, useMemo } from 'react';
-import { z } from 'zod';
-import type { AddProductFormData, CategoryDto } from '@/types';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import React, { useState, useMemo } from "react";
+import { z } from "zod";
+import type { AddProductFormData, CategoryDto } from "@/types";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Plus } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // Schema for validation
 const addProductSchema = z.object({
@@ -27,11 +27,11 @@ const AddProductForm: React.FC<AddProductFormProps> = ({ categories, onSubmit, d
   const isValid = useMemo(() => addProductSchema.safeParse(formData).success, [formData]);
 
   const handleChange = (field: keyof AddProductFormData, value: string | number) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleCategoryChange = (value: string) => {
-    handleChange('category_id', parseInt(value, 10));
+    handleChange("category_id", parseInt(value, 10));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -47,55 +47,85 @@ const AddProductForm: React.FC<AddProductFormProps> = ({ categories, onSubmit, d
   };
 
   return (
-    <form onSubmit={handleSubmit} className="p-4 mb-6 border rounded-lg bg-gray-50 dark:bg-gray-800">
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
-        <div className="md:col-span-2">
-          <Label htmlFor="name">Nazwa produktu</Label>
-          <Input 
-            id="name" 
-            value={formData.name || ''}
-            onChange={(e) => handleChange('name', e.target.value)}
-          />
-        </div>
-        <div>
-          <Label htmlFor="quantity">Ilość</Label>
-          <Input 
-            id="quantity" 
+    <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-3 p-3">
+      {/* 1. NAZWA PRODUKTU (Najważniejsza - zajmuje dostępną przestrzeń flex-1) */}
+      <div className="flex-1">
+        <label htmlFor="name" className="sr-only">
+          Nazwa produktu
+        </label>
+        <Input
+          id="name"
+          placeholder="Co chcesz dodać?"
+          value={formData.name || ""}
+          onChange={(e) => handleChange("name", e.target.value)}
+          className="h-10 border-stone-200 bg-stone-50/50 focus:bg-white focus:border-stone-400 placeholder:text-stone-400"
+          autoComplete="off"
+        />
+      </div>
+
+      {/* 2. GRUPA ILOŚĆ I JEDNOSTKA (Obok siebie nawet na mobile) */}
+      <div className="flex gap-2 md:w-auto">
+        <div className="w-20 md:w-24">
+          <label htmlFor="quantity" className="sr-only">
+            Ilość
+          </label>
+          <Input
+            id="quantity"
             type="number"
-            value={formData.quantity || ''}
-            onChange={(e) => handleChange('quantity', e.target.value)}
+            placeholder="Il."
+            value={formData.quantity || ""}
+            onChange={(e) => handleChange("quantity", e.target.value)}
+            className="h-10 border-stone-200 bg-stone-50/50 focus:bg-white focus:border-stone-400 placeholder:text-stone-400 text-center"
           />
         </div>
-        <div>
-          <Label htmlFor="unit">Jednostka</Label>
-          <Input 
-            id="unit" 
-            value={formData.unit || ''}
-            onChange={(e) => handleChange('unit', e.target.value)}
+        <div className="w-20 md:w-24">
+          <label htmlFor="unit" className="sr-only">
+            Jednostka
+          </label>
+          <Input
+            id="unit"
+            placeholder="Jedn."
+            value={formData.unit || ""}
+            onChange={(e) => handleChange("unit", e.target.value)}
+            className="h-10 border-stone-200 bg-stone-50/50 focus:bg-white focus:border-stone-400 placeholder:text-stone-400 text-center"
           />
-        </div>
-        <div>
-          <Label htmlFor="category">Kategoria</Label>
-          <Select onValueChange={handleCategoryChange} value={formData.category_id?.toString()}>
-            <SelectTrigger>
-              <SelectValue placeholder="Wybierz..." />
-            </SelectTrigger>
-            <SelectContent>
-              {categories.map(cat => (
-                <SelectItem key={cat.id} value={cat.id.toString()}>{cat.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
         </div>
       </div>
-      {errors && (
-        <div className="mt-2 text-xs text-red-500">
-          {Object.values(errors.flatten().fieldErrors).map(err => err.join(', ')).join('; ')}
-        </div>
-      )}
-      <Button type="submit" disabled={!isValid || disabled} className="mt-4 w-full md:w-auto">
-        Dodaj produkt
+
+      {/* 3. KATEGORIA (Stała szerokość) */}
+      <div className="w-full md:w-40">
+        <label htmlFor="category" className="sr-only">
+          Kategoria
+        </label>
+        <Select onValueChange={handleCategoryChange} value={formData.category_id?.toString()}>
+          <SelectTrigger className="h-10 border-stone-200 bg-stone-50/50 focus:bg-white focus:border-stone-400 text-stone-600">
+            <SelectValue placeholder="Kategoria" />
+          </SelectTrigger>
+          <SelectContent>
+            {categories.map((cat) => (
+              <SelectItem key={cat.id} value={cat.id.toString()}>
+                {cat.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* 4. PRZYCISK (Kwadratowy z ikoną na desktopie, pełny na mobile) */}
+      <Button
+        type="submit"
+        disabled={!isValid || disabled}
+        size="icon" // Na desktopie sama ikona
+        className="h-10 w-10 shrink-0 bg-stone-900 hover:bg-stone-800 text-white shadow-sm md:w-10 w-full"
+      >
+        <Plus className="h-5 w-5" />
+        <span className="md:hidden ml-2">Dodaj produkt</span>
       </Button>
+
+      {/* Ewentualne błędy wyświetlamy pod spodem, ale dyskretnie */}
+      {errors && Object.keys(errors.flatten().fieldErrors).length > 0 && (
+        <div className="w-full text-xs text-red-500 md:hidden">Błąd: Uzupełnij nazwę produktu.</div>
+      )}
     </form>
   );
 };

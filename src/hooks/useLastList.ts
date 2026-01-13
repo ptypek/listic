@@ -70,7 +70,7 @@ export const useLastList = () => {
         toast.error("Musisz być zalogowany, aby zaktualizować produkt.");
         return Promise.reject(new Error("User not authenticated"));
       }
-      return listService.updateListItem(supabaseClient, itemId, data, user.id);
+      return listService.updateListItem(supabaseClient, itemId, data);
     },
     onMutate: async ({ itemId, data }) => {
       await queryClient.cancelQueries({ queryKey: listQueryKey });
@@ -111,6 +111,8 @@ export const useLastList = () => {
           is_checked: false,
           source: "manual",
           list_id: old.id,
+          quantity: newItem.quantity ?? 1,
+          unit: newItem.unit ?? "szt.",
         };
         return { ...old, items: [...old.items, optimisticItem] };
       });
