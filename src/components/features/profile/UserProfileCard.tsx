@@ -60,7 +60,7 @@ const UserProfileCard: React.FC<UserProfileCardProps> = ({ user }) => {
           className="w-full hover:bg-gray-100"
           onClick={() => handleDeleteAccount({ user })}
         >
-          Usuń konto
+          Usuń kontoo
         </Button>
       </CardFooter>
     </Card>

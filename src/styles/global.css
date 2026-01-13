@@ -4,25 +4,36 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --radius: 0.25rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.25 0.003 300);
+  --radius: 0.5rem;
+  /* Tło: Ciepły kremowy (Stone-50) */
+  --background: oklch(0.98 0.005 80);
+  /* Tekst: Ciemny ciepły szary (Stone-900) */
+  --foreground: oklch(0.25 0.02 80);
+  
+  /* Karty: Czysta biel */
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.25 0.003 300);
+  --card-foreground: oklch(0.25 0.02 80);
+  
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.25 0.003 300);
-  --primary: oklch(0.5 0.15 250);
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.95 0.003 300);
-  --secondary-foreground: oklch(0.25 0.003 300);
-  --muted: oklch(0.95 0.003 300);
-  --muted-foreground: oklch(0.4 0.003 300);
-  --accent: oklch(0.6 0.1 200);
-  --accent-foreground: oklch(1 0 0);
-  --destructive: oklch(0.5 0.2 30);
-  --border: oklch(0.8 0.003 300);
-  --input: oklch(0.95 0.003 300);
-  --ring: oklch(0.5 0.15 250);
+  --popover-foreground: oklch(0.25 0.02 80);
+  
+  /* Primary: Głęboka czerń/grafit - bardzo eleganckie */
+  --primary: oklch(0.2 0.02 80);
+  --primary-foreground: oklch(0.98 0.005 80);
+  
+  --secondary: oklch(0.95 0.01 80);
+  --secondary-foreground: oklch(0.25 0.02 80);
+  
+  --muted: oklch(0.95 0.01 80);
+  --muted-foreground: oklch(0.5 0.02 80);
+  
+  --accent: oklch(0.93 0.01 80);
+  --accent-foreground: oklch(0.25 0.02 80);
+  
+  --destructive: oklch(0.6 0.15 25);
+  --border: oklch(0.9 0.01 80);
+  --input: oklch(0.9 0.01 80);
+  --ring: oklch(0.25 0.02 80);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -39,14 +50,19 @@
 }
 
 .dark {
-  --background: oklch(0.2 0.003 300);
-  --foreground: oklch(0.95 0.003 300);
-  --card: oklch(0.22 0.003 300);
-  --card-foreground: oklch(0.95 0.003 300);
-  --popover: oklch(0.22 0.003 300);
-  --popover-foreground: oklch(0.95 0.003 300);
-  --primary: oklch(0.7 0.15 250);
-  --primary-foreground: oklch(0 0 0);
+  --background: oklch(0.15 0.02 80);
+  --foreground: oklch(0.98 0.005 80);
+  
+  --card: oklch(0.18 0.02 80);
+  --card-foreground: oklch(0.98 0.005 80);
+  
+  --popover: oklch(0.18 0.02 80);
+  --popover-foreground: oklch(0.98 0.005 80);
+  
+  --primary: oklch(0.98 0.005 80);
+  --primary-foreground: oklch(0.15 0.02 80);
+  
+  --border: oklch(0.25 0.02 80);
   --secondary: oklch(0.23 0.003 300);
   --secondary-foreground: oklch(0.95 0.003 300);
   --muted: oklch(0.23 0.003 300);

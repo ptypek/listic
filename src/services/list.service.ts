@@ -1,7 +1,7 @@
 import { z } from "zod";
 import OpenAI from "openai";
 import { type SupabaseClient } from "../db/supabase.client";
-import { AiServiceResponseSchema, type CreateListPayload, GetListsQueryDto, type addListItemSchema } from "../lib/validators/list.validator";
+import { AiServiceResponseSchema, type CreateListPayload, GetListsQueryDto } from "../lib/validators/list.validator";
 import type { AddListItemCommand, GenerateListFromRecipesCommand, ListItemDto, ShoppingListWithItemsDto, UpdateListItemCommand, UpdateShoppingListCommand } from "../types";
 
 const aiCategoryToDbCategory: { [key: string]: string } = {
@@ -371,7 +371,7 @@ class ListService {
     return newItem;
   }
 
-  async updateListItem(supabase: SupabaseClient, itemId: string, data: UpdateListItemCommand, userId: string): Promise<ListItemDto> {
+  async updateListItem(supabase: SupabaseClient, itemId: string, data: UpdateListItemCommand): Promise<ListItemDto> {
     // RLS ensures the user can only update items on their own lists.
     // The `userId` parameter is implicitly used by RLS policy via `auth.uid()`.
     const { data: updatedItem, error } = await supabase
@@ -410,7 +410,7 @@ class ListService {
       throw new Error("A database error occurred while verifying the item.");
     }
 
-    // @ts-ignore
+    // @ts-expect-error - item can be null
     if (!item || item.shopping_lists.user_id !== userId) {
       throw new NotFoundError("List item not found or access denied");
     }

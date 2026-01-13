@@ -42,9 +42,9 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
     await deleteUserAccount(supabaseAdmin, result.data.uuId);
     return new Response(null, { status: 204 });
   } catch (error) {
-    // @ts-ignore
+    // @ts-expect-error - error is not typed
     if (error.name === "NotFoundError") {
-      // @ts-ignore
+      // @ts-expect-error - error is not typed
       return new Response(JSON.stringify({ message: error.message }), {
         status: 404,
       });

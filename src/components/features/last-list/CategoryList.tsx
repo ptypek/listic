@@ -1,10 +1,10 @@
 import React from 'react';
-import type { CategoryViewModel } from '@/types';
+import type { CategoryViewModel, ListItemViewModel, UpdateListItemCommand } from '@/types';
 import CategoryCard from './CategoryCard';
 
 interface CategoryListProps {
   groupedItems: CategoryViewModel[];
-  onUpdateItem: (id: string, data: any) => void;
+  onUpdateItem: (id: string, data: UpdateListItemCommand) => void;
   onDeleteItem: (id: string) => void;
   onEditItem: (item: ListItemViewModel) => void;
 }
