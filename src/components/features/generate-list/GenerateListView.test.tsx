@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import React from "react";
 
 import { render, screen, fireEvent } from "@testing-library/react";
@@ -64,9 +63,9 @@ describe("GenerateListView", () => {
 
   it("should render the initial view correctly", () => {
     setup();
-    expect(screen.getByText("Wygeneruj listę z przepisów")).toBeInTheDocument();
+    expect(screen.getByText("Co dziś kupujemy?")).toBeInTheDocument();
     expect(
-      screen.getByText("Wklej jeden lub więcej przepisów, a my wyczarujemy z nich listę zakupów.")
+      screen.getByText("Wklejaj całe przepisy, a my wyczarujemy z nich idealną listę zakupów.")
     ).toBeInTheDocument();
     expect(screen.getByTestId("recipe-input-list")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Dodaj kolejny przepis/i })).toBeInTheDocument();
@@ -80,11 +79,12 @@ describe("GenerateListView", () => {
     expect(mockAddRecipe).toHaveBeenCalledTimes(1);
   });
 
-  it('should disable "Add another recipe" button when recipe limit is reached', () => {
+  it('should hide "Add another recipe" button when recipe limit is reached', () => {
     const recipes = Array.from({ length: 10 }, (_, i) => ({ id: `${i}`, text: "" }));
     setup({ recipes });
-    const addButton = screen.getByRole("button", { name: /Dodaj kolejny przepis/i });
-    expect(addButton).toBeDisabled();
+
+    const addButton = screen.queryByRole("button", { name: /Dodaj kolejny przepis/i });
+    expect(addButton).not.toBeInTheDocument();
   });
 
   it("should call updateRecipe when a recipe text is changed", () => {
@@ -110,7 +110,9 @@ describe("GenerateListView", () => {
 
   it("should show loading spinner and disable submit button when isLoading is true", () => {
     setup({ isLoading: true });
-    const generateButton = screen.getByRole("button", { name: /Generuj listę/i });
+
+    const generateButton = screen.getByRole("button", { name: /Czarowanie/i });
+
     expect(generateButton).toBeDisabled();
     expect(generateButton.querySelector("svg.animate-spin")).toBeInTheDocument();
   });
@@ -123,8 +125,8 @@ describe("GenerateListView", () => {
 
   it("should not display an error message when error is null", () => {
     setup({ error: null });
-    const errorElement = screen.getByTestId("error-message");
-    expect(errorElement).toBeInTheDocument();
-    expect(errorElement.textContent.trim()).toBe("");
+
+    const errorElement = screen.queryByTestId("error-message");
+    expect(errorElement).not.toBeInTheDocument();
   });
 });
