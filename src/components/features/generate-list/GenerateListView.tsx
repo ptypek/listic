@@ -2,7 +2,7 @@ import * as React from "react";
 import { useGenerateList } from "@/hooks/useGenerateList";
 import { RecipeInputList } from "./RecipeInputList";
 import { Button } from "@/components/ui/button";
-import { Loader2, Plus, Wand2, ChefHat } from "lucide-react"; // Upewnij się, że masz te ikony
+import { Loader2, Plus, Wand2, ChefHat } from "lucide-react";
 
 export const GenerateListView = () => {
   const { recipes, isLoading, error, addRecipe, removeRecipe, updateRecipe, handleSubmit } = useGenerateList();
@@ -12,7 +12,6 @@ export const GenerateListView = () => {
   return (
     <div className="container mx-auto max-w-3xl py-12 px-4 md:py-16">
       <div className="flex flex-col gap-10">
-        {/* 1. SEKCJA NAGŁÓWKA: Dodajemy ikonę i lepsze odstępy */}
         <header className="text-center space-y-6">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-secondary/50 rotate-3 shadow-sm text-primary">
             <ChefHat className="h-8 w-8" />

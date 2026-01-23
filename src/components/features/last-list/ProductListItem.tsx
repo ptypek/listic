@@ -1,8 +1,8 @@
-import React from 'react';
-import { cn } from '@/lib/utils';
-import type { ListItemViewModel, UpdateListItemCommand } from '@/types';
-import { Checkbox } from '@/components/ui/checkbox';
-import ItemActions from './ItemActions';
+import React from "react";
+import { cn } from "@/lib/utils";
+import type { ListItemViewModel, UpdateListItemCommand } from "@/types";
+import { Checkbox } from "@/components/ui/checkbox";
+import ItemActions from "./ItemActions";
 
 interface ProductListItemProps {
   item: ListItemViewModel;
@@ -18,20 +18,21 @@ const ProductListItem: React.FC<ProductListItemProps> = ({ item, onUpdate, onDel
 
   return (
     <div className="flex items-center space-x-4">
-      <Checkbox 
+      <Checkbox
         id={`item-${item.id}`}
         checked={item.is_checked}
         onCheckedChange={handleCheckedChange}
         className="h-6 w-6"
+        aria-label={`Oznacz ${item.name}, ${item.quantity} ${item.unit} jako kupione`}
       />
-      <label 
+      <label
         htmlFor={`item-${item.id}`}
-        className={cn(
-          "flex-grow text-lg",
-          item.is_checked && "line-through text-gray-500"
-        )}
+        className={cn("flex-grow text-lg", item.is_checked && "line-through text-gray-500")}
       >
-        {item.name} <span className="text-sm text-gray-400">({item.quantity} {item.unit})</span>
+        {item.name}{" "}
+        <span className="text-sm text-gray-400">
+          ({item.quantity} {item.unit})
+        </span>
       </label>
       <ItemActions item={item} onDelete={onDelete} onEdit={onEdit} />
     </div>

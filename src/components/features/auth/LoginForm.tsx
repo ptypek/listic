@@ -51,7 +51,9 @@ export function LoginForm() {
               </div>
             </div>
 
-            <CardTitle className="text-2xl font-bold tracking-tight">Cześć!</CardTitle>
+            <CardTitle className="text-2xl font-bold tracking-tight">
+              <h1>Cześć!</h1>
+            </CardTitle>
             <CardDescription className="text-muted-foreground">Wpisz swoje dane, aby przejść do panelu</CardDescription>
           </CardHeader>
 
@@ -63,6 +65,7 @@ export function LoginForm() {
               <Input
                 id="email"
                 type="email"
+                autoComplete="email"
                 placeholder="m@example.com"
                 required
                 value={email}
@@ -86,6 +89,7 @@ export function LoginForm() {
               <Input
                 id="password"
                 type="password"
+                autoComplete="current-password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
